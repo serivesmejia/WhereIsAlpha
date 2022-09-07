@@ -1,5 +1,5 @@
 <script>
-	import Globe from "./Globe.svelte";
+	import Globe from "./globe/Globe.svelte";
 </script>
 
 <body>
