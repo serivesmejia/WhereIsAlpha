@@ -3,13 +3,12 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 
 export class GlobeScene {
 
-  constructor(renderer) {
+  constructor(renderer, scene) {
     this.renderer = renderer
+    this.scene = scene
   }
 
   setup() {
-    this.scene = new THREE.Scene()
-
     this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     this.camera.position.z = 2;
     this.scene.add(this.camera);
@@ -28,8 +27,6 @@ export class GlobeScene {
 
     // earth material
     const earthMaterial = new THREE.MeshPhongMaterial({
-      roughness: 1,
-      metalness: 0,
       map: texture.load('texture/earthmap1k.jpg'),
       bumpMap: texture.load('texture/earthbump.jpg'),
       bumpScale: 0.3
