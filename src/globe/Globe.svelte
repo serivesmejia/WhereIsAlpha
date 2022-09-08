@@ -1,11 +1,19 @@
 <script>
     import { onMount } from 'svelte';
-    import { createScene } from "./globe_scene";
+    import { GlobeScene } from "./globe_scene";
+    import * as THREE from 'three'
   
     let el;
+    let renderer;
   
     onMount(() => {
-      createScene(el)
+      // renderer setup
+      renderer = new THREE.WebGLRenderer({
+        canvas: el,
+        antialias: true,
+      });
+
+      new GlobeScene(renderer).setup()
     });
 </script>
   
