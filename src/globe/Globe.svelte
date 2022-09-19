@@ -3,6 +3,9 @@
     import { GlobeScene } from "./globe_scene";
     import { ISS } from "./iss";
     import * as THREE from 'three'
+
+    const globe_radius = 0.6
+    const iss_separation_from_earth = 0.1
   
     let el;
     let renderer;
@@ -16,8 +19,8 @@
         antialias: true,
       });
 
-      new GlobeScene(renderer, scene).setup()
-      new ISS(scene).setup()
+      new GlobeScene(renderer, scene, globe_radius).setup()
+      new ISS(scene, globe_radius, iss_separation_from_earth).setup()
     });
 </script>
   
