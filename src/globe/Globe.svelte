@@ -13,11 +13,14 @@
   const far = 1000;
 
   const globe_radius = 0.6;
-  const iss_separation_from_earth = 0.2;
+  const iss_separation_from_earth = 0.1;
 
   let el;
   let renderer;
   let controls;
+  let iss;
+
+  let focusOnIss = false
 
   export let rendererManager;
 
@@ -52,7 +55,14 @@
     let globe = new Globe(camera, globe_radius)
     globe.setup(scene);
 
-    let iss = new ISS(globe_radius, positionRequester, iss_separation_from_earth)
+    iss = new ISS(globe_radius, positionRequester, iss_separation_from_earth)
+    
+    iss.onStart.addListener(() => {
+      controls.target = iss.iss_scene.position
+
+      focusOnIss = true
+    });
+
     iss.setup(scene);
 
     rendererManager.addChild(globe)
@@ -64,7 +74,22 @@
   function render() {
     renderer.render(scene, camera);
     controls.update();
+    if(focusOnIss) {
+      controls.target = iss.iss_scene.position
+    }
   }
 </script>
 
-<canvas bind:this={el} />
+<style>
+  .scene {
+      position: absolute;
+      top: 8%;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      height: 100%;
+      width: 100%;
+  }
+</style>
+
+<canvas class="scene" bind:this={el} />

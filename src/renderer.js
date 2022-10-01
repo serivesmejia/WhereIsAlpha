@@ -17,6 +17,7 @@ export class RendererManager {
 
     _render() {
         this.children.forEach((child) => {
+            if(child == undefined) return
             if (child instanceof Function) {
                 child()
             } else if (child.hasOwnProperty("allow_rendering") && child.allow_rendering != false) {
@@ -28,7 +29,11 @@ export class RendererManager {
     }
 
     addChild(child) {
-        this.children.push(child)
+        return this.children.push(child)
+    }
+
+    removeChild(child_id) {
+        this.children[child_id] = undefined
     }
 
 }

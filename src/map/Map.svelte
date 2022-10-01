@@ -1,80 +1,86 @@
 <script>
     import { onMount } from "svelte";
-    import { iss_icon } from "./iss_icon.js";
+    import { iss_icon, location_circle_icon } from "./icons.js";
 
-    import * as TLE from 'tle.js'
+    import * as TLE from "tle.js";
 
     import L from "leaflet";
-    import "leaflet-curve"
 
     export let rendererManager;
     export let positionRequester;
+    let positionRequesterListener;
 
     let map;
-
-    const initialView = [39.8283, -98.5795];
+    let renderer;
 
     const issIcon = L.divIcon({
         html: iss_icon,
         className: "",
-        iconSize: [10, 10],
-        iconAnchor: [12, 40],
+        iconAnchor: [25, 25]
+    });
+    const locationCircleIcon = L.divIcon({
+        html: location_circle_icon,
+        className: "",
+        iconAnchor: [25, 25]
     });
 
     const issMarker = L.marker([0, 0], { icon: issIcon });
-    const issPathCurve = L.Curve([], {color: 'black', fill: true}, )
+    const issPathPoly = L.polyline([], { color: "black" });
+    
+    const locationCircleMarker = L.marker([0, 0], { icon: locationCircleIcon });
 
     function createMap(container) {
         let m = L.map(container).setView([0, 0], 1);
-        
+
         L.tileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution:
                 '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            noWrap: true
         }).addTo(m);
 
         return m;
     }
 
     function mapAction(container) {
-        map = createMap(container);
+        map = createMap(container)
+            .setMinZoom(1.35).fitWorld()
+
+            
+        issPathPoly.addTo(map)
+        locationCircleMarker.addTo(map)
+        issMarker.addTo(map);
+
 
         return {
             destroy: () => {
                 map.remove();
                 map = null;
+                rendererManager.removeChild(renderer)
             },
         };
     }
 
     onMount(() => {
-        positionRequester.onPositionReceive.addListener(() => {
-            let lat = positionRequester.last_position.latitude;
-            let lon = positionRequester.last_position.longitude;
-            
-            issMarker.addTo(map);
+        renderer = rendererManager.addChild(() => {
+            //let lat = positionRequester.last_position.latitude;
+            //let lon = positionRequester.last_position.longitude;
 
-            issMarker.setLatLng([lat, lon]);
+            let { lat, lng } = positionRequester.current_position()
+            issMarker.setLatLng([lat, lng]);
 
             TLE.getGroundTracks({
                 tle: positionRequester.last_tle,
                 // Relative time to draw orbits from.  This will be used as the "middle"/current orbit.
-                startTimeMS: positionRequester.last_update,
+                //startTimeMS: positionRequester.last_update,
 
                 // Resolution of plotted points.  Defaults to 1000 (plotting a point once for every second).
-                stepMS: 1000,
+                stepMS: 500,
 
                 // Returns points in [lng, lat] order when true, and [lat, lng] order when false.
-                isLngLatFormat: true,
+                isLngLatFormat: false,
             }).then((threeOrbitsArr) => {
-                let current_orbit = threeOrbitsArr[1]
-                let path = [["M", current_orbit[0]]]
-
-                for(let i = 1 ; i < current_orbit.length ; i++) {
-                    path.push(["L", current_orbit[i]])
-                }
-
-                console.log(path)
-                issPathCurve.setPath(path).addTo(map)
+                let current_orbit = threeOrbitsArr[1];
+                issPathPoly.setLatLngs(current_orbit);
             });
         });
     });

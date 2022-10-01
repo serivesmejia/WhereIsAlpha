@@ -1,5 +1,6 @@
 import * as THREE from 'three'
-const earth_r = 6378;
+
+export const earth_r = 6378;
 
 export function calculate_position_from(latitude, longitude, separation, sphere_radius) {
     let lat = THREE.MathUtils.degToRad(latitude)
