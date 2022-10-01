@@ -2,7 +2,10 @@
     import { onMount } from "svelte";
     import { iss_icon } from "./iss_icon.js";
 
+    import * as TLE from 'tle.js'
+
     import L from "leaflet";
+    import "leaflet-curve"
 
     export let rendererManager;
     export let positionRequester;
@@ -19,6 +22,7 @@
     });
 
     const issMarker = L.marker([0, 0], { icon: issIcon });
+    const issPathCurve = L.Curve([], {color: 'black', fill: true}, )
 
     function createMap(container) {
         let m = L.map(container).setView([0, 0], 1);
@@ -50,6 +54,28 @@
             issMarker.addTo(map);
 
             issMarker.setLatLng([lat, lon]);
+
+            TLE.getGroundTracks({
+                tle: positionRequester.last_tle,
+                // Relative time to draw orbits from.  This will be used as the "middle"/current orbit.
+                startTimeMS: positionRequester.last_update,
+
+                // Resolution of plotted points.  Defaults to 1000 (plotting a point once for every second).
+                stepMS: 1000,
+
+                // Returns points in [lng, lat] order when true, and [lat, lng] order when false.
+                isLngLatFormat: true,
+            }).then((threeOrbitsArr) => {
+                let current_orbit = threeOrbitsArr[1]
+                let path = [["M", current_orbit[0]]]
+
+                for(let i = 1 ; i < current_orbit.length ; i++) {
+                    path.push(["L", current_orbit[i]])
+                }
+
+                console.log(path)
+                issPathCurve.setPath(path).addTo(map)
+            });
         });
     });
 </script>

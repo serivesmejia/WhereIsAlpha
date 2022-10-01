@@ -26,23 +26,10 @@ export class IssPositionRequester {
 
     refresh_tle() {
         fetch(tle_api)
-            .then(out => out.text())
-            .then(tles => {
-                this.last_tle = ""
+            .then(out => out.json())
+            .then(data => {
+                this.last_tle = `${data.name}\n${data.line1}\n${data.line2}`
                 
-                let tles_lines = tles.split("\n")
-                let iss_tle_start_index = -1
-                for(let i = 0; i++; i < tles_lines.length) {
-                    if(iss_tle_start_index == -1 && tles_lines[i].includes("ISS (ZARYA)")) {
-                        iss_tle_start_index = i;
-                    }
-
-                    if(iss_tle_start_index >= i) {
-                        if(i - iss_tle_start_index <= 2) {
-                            this.last_tle += tles_lines[i]
-                        } else break
-                    }
-                }
 
                 console.log(this.last_tle)
 

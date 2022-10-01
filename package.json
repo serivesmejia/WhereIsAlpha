@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "leaflet": "^1.9.1",
+    "leaflet-curve": "^1.0.0",
     "svelte-tabs": "^1.1.0",
     "three": "^0.144.0",
     "tle.js": "^4.7.2"
