@@ -16,12 +16,13 @@
     const issIcon = L.divIcon({
         html: iss_icon,
         className: "",
-        iconAnchor: [25, 25]
+        iconAnchor: [30, 30]
     });
     const locationCircleIcon = L.divIcon({
         html: location_circle_icon,
         className: "",
-        iconAnchor: [25, 25]
+        iconAnchor: [30, 30],
+        iconSize: [5, 5]
     });
 
     const issMarker = L.marker([0, 0], { icon: issIcon });
@@ -44,12 +45,10 @@
     function mapAction(container) {
         map = createMap(container)
             .setMinZoom(1.35).fitWorld()
-
             
         issPathPoly.addTo(map)
         locationCircleMarker.addTo(map)
         issMarker.addTo(map);
-
 
         return {
             destroy: () => {
@@ -83,6 +82,13 @@
                 issPathPoly.setLatLngs(current_orbit);
             });
         });
+
+        window.navigator.geolocation
+            .getCurrentPosition((data) => {
+                locationCircleMarker.setLatLng([data.coords.latitude, data.coords.longitude])
+            }, (fail) => { 
+                locationCircleMarker.remove()
+            });
     });
 </script>
 
