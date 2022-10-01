@@ -1,35 +1,46 @@
 import * as THREE from 'three'
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { calculate_position_from } from './util';
 
 const texture = new THREE.TextureLoader()
 
-// camera setup
-const fov = 60;
-const aspect = window.innerWidth / window.innerHeight;
-const near = 0.1;
-const far = 1000;
+function getDayOfYear(epoch) {
+  var d = new Date();
+  d.setTime(epoch * 3600 * 24 * 1000);
+  var y = d.getUTCFullYear();
+  var d2 = new Date(Date.UTC(y, 0, 1));
+  return ((d.getTime() - d2.getTime()) / (1000 * 3600 * 24));
+}
 
-export class GlobeScene {
+const TIMCON = 3600 * 24 * 1000
 
-  constructor(renderer, scene, sphere_radius) {
-    this.renderer = renderer
-    this.scene = scene
+function calculateSunPosition() {
+    var Now = new Date();
+    let epoch = Now.getTime() / TIMCON;
+
+    var MAR21 = (31 + 28.25 + 21) * 1.0;
+    var Days = getDayOfYear(epoch);
+    var DayPart = Days - Math.floor(Days); 
+
+    return {
+      latitude: (23.5 * Math.PI / 180) * Math.sin(Math.PI * 2 / 365.25 * (Days - MAR21)),
+      longitude: Math.PI * (1 - 2 * DayPart) 
+    }
+}
+
+export class Globe {
+
+  constructor(camera, sphere_radius) {
+    this.camera = camera
     this.sphere_radius = sphere_radius
+    
+    this.pointLight = new THREE.PointLight(0xffffff, 1)
+  
+    this.allow_rendering = false
   }
 
-  setup() {
-    this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+  setup(scene) {
     this.camera.position.z = 2;
-    this.scene.add(this.camera);
-
-    this.renderer.setPixelRatio((window.devicePixelRatio) ? window.devicePixelRatio : 1);
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.autoClear = false;
-    this.renderer.setClearColor(0x000000, 0.0);
-
-    // orbit control setup
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    this.controls.enablePan = false
+    scene.add(this.camera);
 
     // earth geometry
     const earthGeometry = new THREE.SphereGeometry(this.sphere_radius, 32, 32);
@@ -44,7 +55,7 @@ export class GlobeScene {
     // earth mesh
     const earthMesh = new THREE.Mesh(earthGeometry, earthMaterial);
     earthMesh.rotateY(THREE.MathUtils.degToRad(-87))
-    this.scene.add(earthMesh);
+    scene.add(earthMesh);
 
     // cloud Geometry
     const cloudGeometry = new THREE.SphereGeometry(0.63, 32, 32);
@@ -57,7 +68,7 @@ export class GlobeScene {
 
     // cloud mesh
     const cloudMesh = new THREE.Mesh(cloudGeometry, cloudMetarial);
-    this.scene.add(cloudMesh);
+    scene.add(cloudMesh);
 
     // galaxy geometry
     const starGeometry = new THREE.SphereGeometry(80, 64, 64);
@@ -70,47 +81,33 @@ export class GlobeScene {
 
     // galaxy mesh
     const starMesh = new THREE.Mesh(starGeometry, starMaterial);
-    this.scene.add(starMesh);
+    scene.add(starMesh);
 
     // ambient light
     const ambientlight = new THREE.AmbientLight(0xffffff, 0.2);
-    this.scene.add(ambientlight);
+    scene.add(ambientlight);
 
     // point light
-    const pointLight = new THREE.PointLight(0xffffff, 1)
-    pointLight.position.set(5, 3, 5);
-    this.scene.add(pointLight);
+    scene.add(this.pointLight);
 
     // point light helper
-    const Helper = new THREE.PointLightHelper(pointLight);
+    const Helper = new THREE.PointLightHelper(this.pointLight);
     // scene.add(Helper);
 
     // handling resizing
     window.addEventListener('resize', () => {
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
-      render();
     }, false);
 
-    // spinning animation
-    const animate = () => {
-      requestAnimationFrame(animate);
-      this.controls.update();
-
-      render();
-    };
-
-    // rendering
-    const render = () => {
-      this.renderer.render(this.scene, this.camera);
-    }
-
-    animate();
+    this.allow_rendering = true
   }
 
   render() {
-    
+    let sun_latlon = calculateSunPosition()
+    let sun_pos = calculate_position_from(sun_latlon.latitude, sun_latlon.longitude, 9, this.sphere_radius)
+
+    this.pointLight.position.set(sun_pos.x, sun_pos.y, sun_pos.z)
   }
 
 }
