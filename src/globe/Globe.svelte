@@ -44,8 +44,8 @@
     renderer.setClearColor(0x000000, 0.0);
 
     controls = new OrbitControls(camera, renderer.domElement);
-    controls.maxZoom = 4
-    controls.minZoom = 1
+    controls.maxZoom = 0.2
+    controls.minZoom = 0.3
     controls.enablePan = false
 
     window.addEventListener("resize", () => {

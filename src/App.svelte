@@ -13,9 +13,12 @@
 	import * as TLE from "tle.js";
 
 	import { Tabs, Tab, TabList, TabPanel } from "svelte-tabs";
+    import { simpleEvent } from "./simpleEvent";
 
 	const iss_position_requester = new IssDataRequester(2 * 60 * 1000);
 	iss_position_requester.start_fetching();
+
+	const onOrbitCalculate = simpleEvent()
 
 	const rendererManager = new RendererManager();
 
@@ -35,6 +38,21 @@
 
 		lat = current_position.lat;
 		lng = current_position.lng;
+
+		TLE.getGroundTracks({
+                tle: iss_position_requester.last_tle,
+                // Relative time to draw orbits from.  This will be used as the "middle"/current orbit.
+                startTimeMS: date,
+
+                // Resolution of plotted points.  Defaults to 1000 (plotting a point once for every second).
+                stepMS: 500,
+
+                // Returns points in [lng, lat] order when true, and [lat, lng] order when false.
+                isLngLatFormat: false,
+        }).then((threeOrbitsArr) => {
+			onOrbitCalculate.context = threeOrbitsArr
+			onOrbitCalculate.trigger()
+		})
 	});
 
 	var displacement;
@@ -43,13 +61,13 @@
 		rendererManager.start();
 	});
 
-	function modulesHandler(container) {
+	
+	function showTimelineForThis(container) {
+		showTimeline = true;
+	}
+
+	function hideTimelineForThis(container) {
 		showTimeline = false;
-		return {
-			destroy: () => {
-				showTimeline = true;
-			},
-		};
 	}
 </script>
 
@@ -67,13 +85,14 @@
 			>
 				<TabList>
 					<Tab>3D</Tab>
-					<Tab>2D Map</Tab>
-					<Tab>ISS Modules</Tab>
+					<Tab>2D</Tab>
+					<!-- <Tab>Modules</Tab> -->
 					<Tab>Sightings</Tab>
 				</TabList>
 			</div>
 
 			<TabPanel>
+				<span use:showTimelineForThis />
 				<Globe
 					{date}
 					{rendererManager}
@@ -82,8 +101,10 @@
 			</TabPanel>
 
 			<TabPanel>
+				<span use:showTimelineForThis />
 				<Map
 					{rendererManager}
+					{onOrbitCalculate}
 					{lat}
 					{lng}
 					{date}
@@ -91,14 +112,15 @@
 				/>
 			</TabPanel>
 
-			<TabPanel>
-				<span use:modulesHandler />
+			<!-- <TabPanel>
+				<span use:hideTimelineForThis />
 				<IssModules {rendererManager} />
-			</TabPanel>
+			</TabPanel> -->
 
 			<TabPanel>
-				<span use:modulesHandler />
-				<Sightings />
+				<span use:hideTimelineForThis />
+				<Sightings {onOrbitCalculate} {date}
+				positionRequester={iss_position_requester}/>
 			</TabPanel>
 		</Tabs>
 	</div>

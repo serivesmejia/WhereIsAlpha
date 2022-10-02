@@ -17,6 +17,8 @@
     export let lat = 0
     export let lng = 0
 
+    export let onOrbitCalculate
+    
     const issIcon = L.divIcon({
         html: iss_icon,
         iconAnchor: [30, 30]
@@ -25,6 +27,8 @@
         html: location_circle_icon,
         iconAnchor: [45, 45]
     });
+
+    let orbitListener
 
     const issMarker = L.marker([0, 0], { icon: issIcon });
     const issPathPoly = L.polyline([], { color: "black" });
@@ -56,6 +60,7 @@
                 map.remove();
                 map = null;
                 rendererManager.removeChild(renderer)
+                onOrbitCalculate.removeListener(orbitListener)
             },
         };
     }
@@ -66,29 +71,20 @@
             //let lon = positionRequester.last_position.longitude;
 
             issMarker.setLatLng([lat, lng]);
-
-            TLE.getGroundTracks({
-                tle: positionRequester.last_tle,
-                // Relative time to draw orbits from.  This will be used as the "middle"/current orbit.
-                startTimeMS: date,
-
-                // Resolution of plotted points.  Defaults to 1000 (plotting a point once for every second).
-                stepMS: 500,
-
-                // Returns points in [lng, lat] order when true, and [lat, lng] order when false.
-                isLngLatFormat: false,
-            }).then((threeOrbitsArr) => {
-                let current_orbit = threeOrbitsArr[1];
-                issPathPoly.setLatLngs(current_orbit);
-            });
         });
 
         window.navigator.geolocation
             .getCurrentPosition((data) => {
+                locationCircleMarker.addTo(map)
                 locationCircleMarker.setLatLng([data.coords.latitude, data.coords.longitude])
             }, (fail) => { 
                 locationCircleMarker.remove()
             });
+
+        orbitListener = onOrbitCalculate.addListener((threeOrbits) => {
+            //let current_orbit = threeOrbits[1];
+            issPathPoly.setLatLngs(onOrbitCalculate.context[1]);
+        })
     });
 </script>
 
