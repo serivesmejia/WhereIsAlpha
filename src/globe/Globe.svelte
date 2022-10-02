@@ -23,8 +23,8 @@
   let focusOnIss = false
 
   export let rendererManager;
-
   export let positionRequester;
+  export let date
 
   let scene = new THREE.Scene();
   let camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
@@ -55,7 +55,7 @@
     let globe = new Globe(camera, globe_radius)
     globe.setup(scene);
 
-    iss = new ISS(globe_radius, positionRequester, iss_separation_from_earth)
+    iss = new ISS(globe_radius, positionRequester, () => { return date }, iss_separation_from_earth)
     
     iss.onStart.addListener(() => {
       controls.target = iss.iss_scene.position
@@ -83,11 +83,11 @@
 <style>
   .scene {
       position: absolute;
-      top: 8%;
+      top: 0%;
       left: 0;
       bottom: 0;
       right: 0;
-      height: 100%;
+      height: 80%;
       width: 100%;
   }
 </style>

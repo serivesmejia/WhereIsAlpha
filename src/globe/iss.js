@@ -2,6 +2,8 @@ import { simpleEvent } from '../simpleEvent.js';
 import * as THREE from 'three'
 import * as TLE from "tle.js";
 import * as satellite from 'satellite.js'
+import { project } from 'ecef-projector'
+
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { calculate_position_from, earth_r } from './util';
@@ -13,6 +15,11 @@ dracoLoader.setDecoderPath('https://raw.githubusercontent.com/mrdoob/three.js/b0
 const loader = new GLTFLoader();
 loader.setDRACOLoader(dracoLoader);
 
+const MS_IN_A_DAY = 86400000;
+
+const texture = new THREE.TextureLoader()
+const step = 500
+
 let iss_model = undefined;
 
 let iss_model_promise = loader.loadAsync(
@@ -22,17 +29,24 @@ let iss_model_promise = loader.loadAsync(
 
 export class ISS {
 
-    constructor(sphere_radius, position_requester, iss_separation_from_earth) {
+    constructor(sphere_radius, position_requester, date_provider, iss_separation_from_earth) {
         this.sphere_radius = sphere_radius
         this.iss_separation_from_earth = iss_separation_from_earth
 
         this.iss_position_requester = position_requester
+        this.date_provider = date_provider
 
         this.last_update = 0
 
         this.current_iss_position = new THREE.Vector3();
         this.current_iss_velocity = new THREE.Vector3();
         this.allow_rendering = false
+
+        this.conversion = this.sphere_radius / earth_r
+        
+        this.orbit_geometry = new THREE.BufferGeometry()//create a blue LineBasicMaterial
+        const material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
+        this.orbit_line = new THREE.Line( this.orbit_geometry, material );
 
         this.onStart = simpleEvent()
     }
@@ -43,6 +57,8 @@ export class ISS {
 
             this.iss_scene = model.scene.clone()
             scene.add(this.iss_scene);
+
+            scene.add(this.orbit_line)
 
             this.onStart.trigger()
 
@@ -61,7 +77,7 @@ export class ISS {
     }
 
     render() {
-        const dateObj = new Date(Date.now())
+        let dateObj = this.date_provider()
 
         //  Propagate satellite using time since epoch (in minutes).
         const positionAndVelocity = satellite.propagate(satellite.twoline2satrec(this.iss_position_requester.last_lineone, this.iss_position_requester.last_linetwo), dateObj)
@@ -70,12 +86,10 @@ export class ISS {
         const gmst = satellite.gstime(dateObj);
         const positionEcf = satellite.eciToEcf(positionEci, gmst);
 
-        let conversion = this.sphere_radius / earth_r
-    
         this.current_iss_position = new THREE.Vector3(
-            positionEcf.y * conversion,
-            positionEcf.z * conversion,
-            positionEcf.x * conversion + (Math.sign(positionEcf.x) * this.iss_separation_from_earth)
+            positionEcf.y * this.conversion,
+            positionEcf.z * this.conversion,
+            positionEcf.x * this.conversion + (Math.sign(positionEcf.x) * this.iss_separation_from_earth)
         )
 
         // console.log(this.current_iss_position);

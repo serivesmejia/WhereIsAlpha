@@ -17,6 +17,7 @@
     "vite": "^3.1.0"
   },
   "dependencies": {
+    "ecef-projector": "^1.0.1",
     "leaflet": "^1.9.1",
     "leaflet-curve": "^1.0.0",
     "svelte-tabs": "^1.1.0",

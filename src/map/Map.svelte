@@ -13,16 +13,17 @@
     let map;
     let renderer;
 
+    export let date = new Date(Date.now())
+    export let lat = 0
+    export let lng = 0
+
     const issIcon = L.divIcon({
         html: iss_icon,
-        className: "",
         iconAnchor: [30, 30]
     });
     const locationCircleIcon = L.divIcon({
         html: location_circle_icon,
-        className: "",
-        iconAnchor: [30, 30],
-        iconSize: [5, 5]
+        iconAnchor: [45, 45]
     });
 
     const issMarker = L.marker([0, 0], { icon: issIcon });
@@ -64,13 +65,12 @@
             //let lat = positionRequester.last_position.latitude;
             //let lon = positionRequester.last_position.longitude;
 
-            let { lat, lng } = positionRequester.current_position()
             issMarker.setLatLng([lat, lng]);
 
             TLE.getGroundTracks({
                 tle: positionRequester.last_tle,
                 // Relative time to draw orbits from.  This will be used as the "middle"/current orbit.
-                //startTimeMS: positionRequester.last_update,
+                startTimeMS: date,
 
                 // Resolution of plotted points.  Defaults to 1000 (plotting a point once for every second).
                 stepMS: 500,
@@ -104,7 +104,7 @@
 <style>
     .map {
         position: absolute;
-        top: 8%;
+        top: 0%;
         left: 0;
         bottom: 0;
         right: 0;

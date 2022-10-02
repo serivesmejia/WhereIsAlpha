@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { calculate_position_from } from './util';
 
+
 const texture = new THREE.TextureLoader()
 
 function getDayOfYear(epoch) {

@@ -7,10 +7,10 @@ export class IssDataRequester {
 
     constructor(interval) {
         this.interval = interval
-        this.last_tle = undefined
+        this.last_tle = "ISS (NAUKA)\n1 49044U 21066A   22274.46188292  .00014869  00000+0  26380-3 0  9992\n2 49044  51.6447 170.0519 0002623 316.7478 215.0466 15.50450812361669"
         this.latlong = [0, 0]
-        this.last_lineone = ""
-        this.last_linetwo = ""
+        this.last_lineone = "1 49044U 21066A   22274.46188292  .00014869  00000+0  26380-3 0  9992"
+        this.last_linetwo = "2 49044  51.6447 170.0519 0002623 316.7478 215.0466 15.50450812361669"
 
         this.onTleReceive = simpleEvent(this)
     }
@@ -35,7 +35,6 @@ export class IssDataRequester {
                 this.last_lineone = data.line1
                 this.last_linetwo = data.line2
 
-                console.log(this.last_tle)
                 this.onTleReceive.trigger()
             })
             .catch(err => { this.refresh_tle() });
