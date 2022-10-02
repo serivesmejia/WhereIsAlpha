@@ -5,6 +5,7 @@
 	import TimelineSlider from "./TimelineSlider.svelte";
 	import Map from "./map/Map.svelte";
 	import IssModules from "./modules/IssModules.svelte";
+	import Sightings from "./sightings/Sightings.svelte";
 
 	import { IssDataRequester } from "./iss_position_requester";
 	import { RendererManager } from "./renderer";
@@ -22,8 +23,8 @@
 
 	let lat = 0;
 	let lng = 0;
-	
-	let showTimeline = true
+
+	let showTimeline = true;
 
 	rendererManager.addChild(() => {
 		date = new Date(Date.now() + displacement * 60 * 60 * 1000);
@@ -43,14 +44,20 @@
 	});
 
 	function modulesHandler(container) {
-		showTimeline = false
-        return {
-            destroy: () => {
-				showTimeline = true
-            },
-        };
-    }
+		showTimeline = false;
+		return {
+			destroy: () => {
+				showTimeline = true;
+			},
+		};
+	}
 </script>
+
+<div
+	style="position: relative;"
+>
+	<img src="ico_whereisalpha.png" style="width: 10%; position: absolute; top: 0px; right: 0px; z-index: 99999999;" />
+</div>
 
 <div class="holder">
 	<div class="body">
@@ -62,6 +69,7 @@
 					<Tab>3D</Tab>
 					<Tab>2D Map</Tab>
 					<Tab>ISS Modules</Tab>
+					<Tab>Sightings</Tab>
 				</TabList>
 			</div>
 
@@ -84,15 +92,20 @@
 			</TabPanel>
 
 			<TabPanel>
-				<span use:modulesHandler/>
-				<IssModules {rendererManager}/>
+				<span use:modulesHandler />
+				<IssModules {rendererManager} />
+			</TabPanel>
+
+			<TabPanel>
+				<span use:modulesHandler />
+				<Sightings />
 			</TabPanel>
 		</Tabs>
 	</div>
 
 	{#if showTimeline}
 		<footer>
-			<TimelineSlider {lat} {lng} bind:displacement/>
+			<TimelineSlider {lat} {lng} bind:displacement />
 		</footer>
 	{/if}
 </div>

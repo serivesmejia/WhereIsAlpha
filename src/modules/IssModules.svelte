@@ -4,4 +4,4 @@
     export let rendererManager
 </script>
 
-<Module {rendererManager} model="" description="ppeeeeeeeg lorem ipsum dolor mafe"/>
+<Module {rendererManager} model="/model/modules/soyuz/soyuz-ext.lwo" description="ppeeeeeeeg lorem ipsum dolor mafe"/>

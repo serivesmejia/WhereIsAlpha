@@ -2,6 +2,9 @@
     import { onMount } from "svelte";
     import * as THREE from "three";
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+    import { LWOLoader } from "three/addons/loaders/LWOLoader.js";
+
+    const loader = new LWOLoader();
 
     export let model;
     export let description;
@@ -30,7 +33,6 @@
         renderer.setPixelRatio(
             window.devicePixelRatio ? window.devicePixelRatio : 1
         );
-        renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.autoClear = false;
         renderer.setClearColor(0x000000, 0.0);
 
@@ -38,6 +40,10 @@
         controls.maxZoom = 4;
         controls.minZoom = 1;
         controls.enablePan = false;
+
+        loader.load(model, function (object) {
+            scene.add(object);
+        });
 
         rendererManager.addChild(render);
     });

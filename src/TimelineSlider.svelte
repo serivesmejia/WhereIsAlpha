@@ -40,7 +40,7 @@
               Math.abs(Math.round((displacement % 1) * 60)) +
               "m"}
     </p>
-    <button on:click={playbackToNow}>Playback Now</button>
+    <button on:click={playbackToNow}>Playback to Now</button>
 </div>
 <input
     type="range"
